@@ -1,24 +1,24 @@
-import React, { useEffect, useState } from "react";
-import Axios from "axios";
+import React, { useEffect} from "react";
+import axios from "axios";
 
 function Home() {
-  const [data, setData] = useState("");
-
-  const getData = async () => {
-    const response = await Axios.get("http://localhost:5000/getdata");
-    //const response = await fetch("http://localhost:5000/getdata");
-    console.log(response.data);
-    setData(response.data);
+  const options = {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    //body: JSON.stringify(searchInput),
+    credentials: "include",
   };
-
   useEffect(() => {
-    getData();
-  }, []);
+    axios.get("http://localhost:5000/login",options).then((response)=>{
+      console.log(response);
+    })
+  }, [])
 
   return (
     <div>
       <h1>Home</h1>
-      <p>{data}</p>
     </div>
   );
 }

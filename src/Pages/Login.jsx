@@ -1,8 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
+  const options = {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    //body: JSON.stringify(searchInput),
+    credentials: "include",
+  };
+  let axiosConfig = {
+    withCredentials: true,
+  };
+  //axios.defaults.withCredentials = true;
   const navigate = useNavigate();
   const [Data, FormData] = useState({
     username: "",
@@ -12,20 +24,25 @@ function Login() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     FormData({ ...Data, [name]: value });
-    console.log(Data);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    try{
-      const response = axios.post("http://localhost:5000/login", Data)
-      console.log(response.data)
-      alert("login successful")
-      navigate('localhost:5000/session')
-    }catch(error){
-      console.error(error)
+    try {
+      axios.post("http://localhost:5000/login", Data,options);
+      //console.log(response.data)
+      //alert("login successful")
+      navigate("/");
+    } catch (error) {
+      console.error(error);
     }
   };
+
+  useEffect(() => {
+    axios.get("http://localhost:5000/login").then((response) => {
+      console.log(response);
+    });
+  }, []);
 
   return (
     <div>
