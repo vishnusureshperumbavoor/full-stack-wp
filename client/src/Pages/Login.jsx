@@ -1,73 +1,72 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+const SERVER_URL = process.env.REACT_APP_SERVER_URL;
 
 function Login() {
-  const options = {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-    },
-    //body: JSON.stringify(searchInput),
-    credentials: "include",
-  };
-  let axiosConfig = {
-    withCredentials: true,
-  };
-  //axios.defaults.withCredentials = true;
   const navigate = useNavigate();
-  const [Data, FormData] = useState({
+  const [formData, setFormData] = useState({
     username: "",
     password: "",
   });
-
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    FormData({ ...Data, [name]: value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      axios.post("http://localhost:5000/login", Data,options);
-      //console.log(response.data)
-      //alert("login successful")
-      navigate("/");
-    } catch (error) {
-      console.error(error);
-    }
+    axios.post(`${SERVER_URL}/login`, formData).then(
+      (response) => {
+        if (response.data === "successful"){
+          alert("welcome to the future");
+          navigate('/')
+        }
+        else alert("error");
+      }
+    );
   };
-
-  useEffect(() => {
-    axios.get("http://localhost:5000/login").then((response) => {
-      console.log(response);
-    });
-  }, []);
-
   return (
     <div>
-      <h1>LOGIN</h1>
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="">Username : </label>
-        <input
-          type="text"
-          name="username"
-          onChange={handleChange}
-          value={Data.username}
-        />
-        <br />
-        <br />
-        <label htmlFor="">Password : </label>
-        <input
-          type="text"
-          name="password"
-          onChange={handleChange}
-          value={Data.password}
-        />
-        <br />
-        <br />
-        <input type="submit" value="submit" />
-      </form>
+      <h1>LOGIN PAGE</h1>
+      <Box
+        component="form"
+        sx={{
+          "& .MuiTextField-root": { m: 1, width: "25ch" },
+        }}
+        noValidate
+        autoComplete="off"
+      >
+        <div>
+          <TextField
+            required
+            id="outlined-required-input"
+            name="username"
+            label="Username"
+            onChange={handleChange}
+            value={formData.name}
+          />
+          <br />
+          <TextField
+            id="outlined-password-input"
+            label="Password"
+            type="password"
+            autoComplete="current-password"
+            name="password"
+            onChange={handleChange}
+            value={formData.name}
+          />
+          <br />
+          <Button variant="contained" onClick={handleSubmit}>
+            Login
+          </Button>
+          <br />
+          <Button onClick={() => navigate("/signupmui")}>
+            Go to signup page
+          </Button>
+        </div>
+      </Box>
     </div>
   );
 }

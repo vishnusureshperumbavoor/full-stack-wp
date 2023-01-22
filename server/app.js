@@ -1,18 +1,17 @@
 const express = require("express");
 const app = express();
-const mongoose = require("mongoose");
-const db = mongoose.connection;
+const MONGOOSE = require("mongoose");
 const dotenv = require("dotenv");
 dotenv.config();
-const mongodb_uri = process.env.MONGODB_URI;
+const MONGO_URI = process.env.MONGODB_URI;
 const PORT = process.env.PORT;
+const JWT_SECRET = process.env.JWT_SECRET
+const collections = require("./collections");
 
 const bodyParser = require("body-parser");
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
-const cookieParser = require("cookie-parser");
-const session = require("express-session");
 const cors = require("cors");
-//const jwt = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 
 app.use(
   cors({
@@ -21,30 +20,8 @@ app.use(
     credentials: true,
   })
 );
-
-app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(
-  session({
-    key: "userId",
-    secret: "keyboard cat",
-    resave: false,
-    saveUninitialized: false,
-  })
-);
-
-//app.use(
-//  express.session({
-//    cookie: {
-//      path: "/",
-//      httpOnly: false,
-//      maxAge: 24 * 60 * 60 * 1000,
-//    },
-//    secret: "1234567890QWERT",
-//  })
-//);
-
 app.use(function (req, res, next) {
   res.header("Content-Type", "application/json;charset=UTF-8");
   res.header("Access-Control-Allow-Credentials", true);
@@ -57,81 +34,67 @@ app.use(function (req, res, next) {
 });
 
 app.set("view engine", "hbs");
-app.set("views", "");
+app.set("views", ""); 
 
-db.on("connected", () => {
-  console.log("mongodb connection established");
-});
+MONGOOSE.set("strictQuery", false);
+MONGOOSE
+  .connect(MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then((res) => {
+    console.log("mongodb connection established");
+  })
+  .catch((err) => {
+    console.log(`error : ${err.message}`);
+  });
 
-db.on("error", (err) => {
-  console.log(`mongodb connection error`);
-  console.log(`${err}`);
-});
-mongoose.set("strictQuery", false);
-
-mongoose.connect(mongodb_uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
-const userSchema = new mongoose.Schema({
+const userSchema = new MONGOOSE.Schema({
   name: String,
   username: String,
   password: String,
   createdAt: { type: Date, default: new Date() },
 });
 
-const User = mongoose.model("User", userSchema);
-
-app.get("/login", (req, res) => {
-  console.log("vsp is a legend");
-  console.log(req.session.user);
-  if (req.session.user) {
-    res.send({ loggedIn: true, user: req.session.user });
-  } else {
-    res.send({ loggedIn: false });
-  }
-});
+const User = MONGOOSE.model("User", userSchema);
 
 app.post("/signup", urlencodedParser, (req, res) => {
+  console.log(req.body);
   const user = new User(req.body);
-  db.collection("userdetails").insertOne(user, (err, coll) => {
+  db.collection(collections.USER_COLLECTIONS).insertOne(user, (err, coll) => {
     if (err) console.log(`error ${err}`);
     else {
       console.log("successfully inserted");
+      res.send("successfully inserted");
     }
   });
 });
 
 app.post("/login", urlencodedParser, (req, res) => {
-  db.collection("userdetails").findOne(
+  console.log(req.body);
+  db.collection(collections.USER_COLLECTIONS).findOne(
     { username: req.body.username },
     (err, user) => {
+      console.log(user);
       if (user && user.password === req.body.password) {
-        res.cookie("user", "username", {
-          expires: new Date(Date.now() + 900000),
-          httpOnly: true,
-        });
-        req.session.user = user;
-        req.session.save()
-        console.log(req.session.user);
+        const token = jwt.sign({ user }, JWT_SECRET);
         console.log("Login successful");
+        res.status(200).json({token,user:user});
       } else {
-        console.log("Invalid username or password");
+        console.log("Invalid password");
+        res.status(500).json("failed");
       }
     }
   );
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie(req.session.user.username);
   req.session.destroy((err) => {
     if (err) {
       console.error(err);
       res.sendStatus(500);
     } else {
-      res.clearCookie("connect.sid");
-      //res.redirect("/login");
+      res.redirect("/login");
     }
   });
 });
