@@ -1,24 +1,22 @@
 import React, { useEffect} from "react";
-import axios from "axios";
+import Button from "@mui/material/Button";
+import {useNavigate} from "react-router-dom"
 
 function Home() {
-  const options = {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-    },
-    //body: JSON.stringify(searchInput),
-    credentials: "include",
-  };
-  useEffect(() => {
-    axios.get("http://localhost:5000/login",options).then((response)=>{
-      console.log(response);
-    })
-  }, [])
-
+  const navigate = useNavigate()
+  useEffect(()=>{
+    if(!localStorage.getItem("token")) navigate('/login')
+    else navigate('/')
+  })
+  const logout = (()=>{
+    localStorage.clear()
+  })
   return (
     <div>
-      <h1>Home</h1>
+      <h1>HOME PAGE</h1>
+      <Button variant="contained" onClick={logout}>
+            LOGOUT BUTTON
+      </Button>
     </div>
   );
 }

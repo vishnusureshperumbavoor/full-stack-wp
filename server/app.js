@@ -5,17 +5,18 @@ const dotenv = require("dotenv");
 dotenv.config();
 const MONGO_URI = process.env.MONGODB_URI;
 const PORT = process.env.PORT;
-const JWT_SECRET = process.env.JWT_SECRET
+const JWT_SECRET = process.env.JWT_SECRET;
 const collections = require("./collections");
 
 const bodyParser = require("body-parser");
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
+const CLIENT_URL = process.env.CLIENT_URL
 
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: [CLIENT_URL],
     methods: ["GET", "POST"],
     credentials: true,
   })
@@ -34,14 +35,13 @@ app.use(function (req, res, next) {
 });
 
 app.set("view engine", "hbs");
-app.set("views", ""); 
+app.set("views", "");
 
 MONGOOSE.set("strictQuery", false);
-MONGOOSE
-  .connect(MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+MONGOOSE.connect(MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
   .then((res) => {
     console.log("mongodb connection established");
   })
@@ -50,8 +50,8 @@ MONGOOSE
   });
 
 const userSchema = new MONGOOSE.Schema({
-  name: String,
-  username: String,
+  role: String,
+  email: String,
   password: String,
   createdAt: { type: Date, default: new Date() },
 });
@@ -62,14 +62,19 @@ app.post("/signup", urlencodedParser, (req, res) => {
   console.log(req.body);
   const user = new User(req.body);
   db.collection(collections.USER_COLLECTIONS).insertOne(user, (err, coll) => {
-    if (err) console.log(`error ${err}`);
+    if (err){
+      console.log(`error ${err}`);
+      res.status(500).json("failed")
+    }
     else {
+      const token = jwt.sign({user},JWT_SECRET)
       console.log("successfully inserted");
-      res.send("successfully inserted");
+      res.status(200).json({token,user:user});
     }
   });
 });
 
+const db = MONGOOSE.connection
 app.post("/login", urlencodedParser, (req, res) => {
   console.log(req.body);
   db.collection(collections.USER_COLLECTIONS).findOne(
@@ -79,7 +84,7 @@ app.post("/login", urlencodedParser, (req, res) => {
       if (user && user.password === req.body.password) {
         const token = jwt.sign({ user }, JWT_SECRET);
         console.log("Login successful");
-        res.status(200).json({token,user:user});
+        res.status(200).json({ token, user: user });
       } else {
         console.log("Invalid password");
         res.status(500).json("failed");

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
@@ -8,6 +8,9 @@ const SERVER_URL = process.env.REACT_APP_SERVER_URL;
 
 function Login() {
   const navigate = useNavigate();
+  useEffect(() => {
+    if (localStorage.getItem("token")) navigate('/')
+  });
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -17,15 +20,18 @@ function Login() {
   };
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios.post(`${SERVER_URL}/login`, formData).then(
-      (response) => {
-        if (response.data === "successful"){
+    axios
+      .post(`${SERVER_URL}/login`, formData)
+      .then((res) => {
+        if (res.status === 200) {
           alert("welcome to the future");
+          localStorage.setItem("token",res.data.token);
           navigate('/')
         }
-        else alert("error");
-      }
-    );
+      })
+      .catch((err) => {
+        alert("error");
+      });
   };
   return (
     <div>
@@ -62,9 +68,7 @@ function Login() {
             Login
           </Button>
           <br />
-          <Button onClick={() => navigate("/signupmui")}>
-            Go to signup page
-          </Button>
+          <Button onClick={() => navigate("/signup")}>Go to signup page</Button>
         </div>
       </Box>
     </div>

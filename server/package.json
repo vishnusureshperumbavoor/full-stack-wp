@@ -17,8 +17,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "client": "cd .. && cd client && npm start",
-    "start": "concurrently -n server,client -c green,blue \"nodemon app.js\" \"npm run client\""
+    "start":"nodemon app.js"
   },
   "author": "",
   "license": "ISC"
