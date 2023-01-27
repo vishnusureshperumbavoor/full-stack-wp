@@ -10,9 +10,9 @@ function Login() {
   const navigate = useNavigate();
   useEffect(() => {
     if (localStorage.getItem("token")) navigate('/')
-  });
+  },[]);
   const [formData, setFormData] = useState({
-    username: "",
+    email: "",
     password: "",
   });
   const handleChange = (e) => {
@@ -23,6 +23,7 @@ function Login() {
     axios
       .post(`${SERVER_URL}/login`, formData)
       .then((res) => {
+        console.log(res);
         if (res.status === 200) {
           alert("welcome to the future");
           localStorage.setItem("token",res.data.token);
@@ -48,8 +49,8 @@ function Login() {
           <TextField
             required
             id="outlined-required-input"
-            name="username"
-            label="Username"
+            name="email"
+            label="email"
             onChange={handleChange}
             value={formData.name}
           />

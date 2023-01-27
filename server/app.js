@@ -50,7 +50,7 @@ MONGOOSE.connect(MONGO_URI, {
   });
 
 const userSchema = new MONGOOSE.Schema({
-  role: String,
+  userrole: String,
   email: String,
   password: String,
   createdAt: { type: Date, default: new Date() },
@@ -58,9 +58,10 @@ const userSchema = new MONGOOSE.Schema({
 
 const User = MONGOOSE.model("User", userSchema);
 
+const db = MONGOOSE.connection
 app.post("/signup", urlencodedParser, (req, res) => {
-  console.log(req.body);
   const user = new User(req.body);
+  console.log(user);
   db.collection(collections.USER_COLLECTIONS).insertOne(user, (err, coll) => {
     if (err){
       console.log(`error ${err}`);
@@ -74,9 +75,7 @@ app.post("/signup", urlencodedParser, (req, res) => {
   });
 });
 
-const db = MONGOOSE.connection
 app.post("/login", urlencodedParser, (req, res) => {
-  console.log(req.body);
   db.collection(collections.USER_COLLECTIONS).findOne(
     { username: req.body.username },
     (err, user) => {

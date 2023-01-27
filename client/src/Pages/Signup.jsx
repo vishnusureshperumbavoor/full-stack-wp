@@ -4,23 +4,29 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormControl from '@mui/material/FormControl';
+import FormLabel from '@mui/material/FormLabel';
 const SERVER_URL = process.env.REACT_APP_SERVER_URL
 
 function Signup() {
   const navigate = useNavigate();
   useEffect(()=>{
     if(localStorage.getItem("token")) navigate('/')
-  })
+  },[])
   
   const [formData, setFormData] = useState({
-    username: "",
-    password: "",
+    userrole:"",
+    email:"",
+    password:"",
   });
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
   const handleSubmit = (e) => {
-    console.log("handlesubmit called");
+    console.log(formData);
     e.preventDefault();
     axios.post(`${SERVER_URL}/signup`, formData).then((res)=>{
       if(res.status===200){
@@ -44,13 +50,21 @@ function Signup() {
         autoComplete="off"
       >
         <div>
-          <TextField
-            required
-            id="outlined-required-input"
-            name="role"
-            label="Role"
-            onChange={handleChange}
-          />
+        <FormControl>
+      <FormLabel id="demo-row-radio-buttons-group-label">Role</FormLabel>
+      <RadioGroup
+        row
+        aria-labelledby="demo-row-radio-buttons-group-label"
+        name="userrole"
+        label="userrole"
+        onChange={handleChange}
+      >
+        <FormControlLabel value="admin" control={<Radio />} label="Admin" />
+        <FormControlLabel value="superadmin" control={<Radio />} label="Superadmin" />
+        <FormControlLabel value="supervisor" control={<Radio />} label="Supervisor" />
+        <FormControlLabel value="dataentry" control={<Radio />} label="DataEntry" />
+      </RadioGroup>
+    </FormControl>
           <br />
           <TextField
             required

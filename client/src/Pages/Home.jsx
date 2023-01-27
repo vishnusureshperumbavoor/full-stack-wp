@@ -7,7 +7,7 @@ function Home() {
   useEffect(()=>{
     if(!localStorage.getItem("token")) navigate('/login')
     else navigate('/')
-  })
+  },[])
   const logout = (()=>{
     localStorage.clear()
   })
