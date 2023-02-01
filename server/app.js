@@ -61,7 +61,6 @@ const User = MONGOOSE.model("User", userSchema);
 const db = MONGOOSE.connection
 app.post("/signup", urlencodedParser, (req, res) => {
   const user = new User(req.body);
-  console.log(user);
   db.collection(collections.USER_COLLECTIONS).insertOne(user, (err, coll) => {
     if (err){
       console.log(`error ${err}`);
@@ -79,7 +78,6 @@ app.post("/login", urlencodedParser, (req, res) => {
   db.collection(collections.USER_COLLECTIONS).findOne(
     { username: req.body.username },
     (err, user) => {
-      console.log(user);
       if (user && user.password === req.body.password) {
         const token = jwt.sign({ user }, JWT_SECRET);
         console.log("Login successful");
